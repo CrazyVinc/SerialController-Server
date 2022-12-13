@@ -8,7 +8,7 @@ class Clients {
 
     newClient(opts) {
         if(opts == undefined) return;
-        var client = new LEDClient(opts);
+        var client = new SerialClient(opts);
         this.clients[client.name] = client;
         return client;
     }
@@ -19,15 +19,15 @@ class Clients {
 
     /**
      * @param {String} name 
-     * @returns {LEDClient}
+     * @returns {SerialClient}
      */
     client(name) {
         if(!name) {
             console.warn("NO CLIENTNAME");
-            return new LEDClient();
+            return new SerialClient();
         }
         if(this.clients[name]) return this.clients[name];
-        return new LEDClient();
+        return new SerialClient();
     }
     get getClients() {
         return this.clients;
@@ -35,7 +35,7 @@ class Clients {
 }
 const clients = new Clients();
 
-class LEDClient {
+class SerialClient {
     constructor(opts) {
         opts = Object.assign({
             clientName: null,
@@ -55,7 +55,7 @@ class LEDClient {
      * @param {String} args
      */
     runCommand(cmd, args) {
-        if(this.socketID == null) return console.warn("Invalid LEDClient!");
+        if(this.socketID == null) return console.warn("Invalid SerialClient!");
         console.log(cmd, args);
         // if(this.commands[cmd])
         ws().of('/client').emit('data', `${cmd} ${args}`);
@@ -64,5 +64,5 @@ class LEDClient {
 
 
 module.exports = {
-    clients, LEDClient
+    clients, SerialClient
 };

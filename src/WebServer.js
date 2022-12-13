@@ -12,7 +12,7 @@ require("./clientManager/Socket");
 app.use(express.urlencoded({extended: true}));
 
 app.get("*", function (req, res) {
-    res.status(404).send({ error: { code: "404" } });
+    res.status(404).send({ error: "NOT FOUND" });
 });
 
 module.exports = server

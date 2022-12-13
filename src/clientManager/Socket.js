@@ -1,8 +1,8 @@
 const { ws } = require("../SocketIO");
-const { clients, LEDClient } = require("./index");
+const { clients, SerialClient } = require("./index");
 
 module.exports = ws().of('/client').on("connection", (socket) => {
-        /** @type {LEDClient} */
+        /** @type {SerialClient} */
         let client;
         console.info(`There is a client connected[id=${socket.id}]`);
 

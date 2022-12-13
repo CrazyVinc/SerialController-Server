@@ -25,9 +25,9 @@ The SerialController is split into 3 parts:
 
 
 ## Socket.io Endpoints:
-`/` - Used for WebPanels.
-`/client` - Used by the clients.
-`/3party` - Used by external programs to directly control an LED Client (Soon).
+- `/` - Used for WebPanels.
+- `/client` - Used by the clients.
+- `/3party` - Used by external programs to directly control an LED Client (Soon).
 
 ## Developer Docs
 Coming in the future.

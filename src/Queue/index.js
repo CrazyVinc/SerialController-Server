@@ -1,7 +1,7 @@
 // var PromiseQueue = require("./Queue");
 // var { startupController } = require("../startupController");
 
-class LEDClient {
+class SerialClient {
     constructor() {
         this.clients = [];
     }
@@ -73,5 +73,5 @@ class LEDClient {
 
 
 module.exports = {
-    LEDClient
+    SerialClient
 }
