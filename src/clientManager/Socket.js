@@ -7,14 +7,12 @@ module.exports = ws().of('/client').on("connection", (socket) => {
         console.info(`There is a client connected[id=${socket.id}]`);
 
         socket.on('disconnect', () => {
-            if(client?.name) clients.removeClient(client.name);
+            if(client) clients.removeClient(client);
             console.info(`There is a client disconnected[id=${socket.id}]`);
         });
 
-        socket.on('init', (e) => {
-            console.log(e)
-            client = clients.newClient({ ...e, socketID: socket.id });
-            // client.runCommand("RGB", "${R}=255");
+        socket.on('init', async(data) => {
+            client = await clients.newClient({ ...data, socketID: socket.id });
         });
         return socket;
     })

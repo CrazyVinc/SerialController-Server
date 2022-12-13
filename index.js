@@ -1,6 +1,7 @@
 require("dotenv-flow").config();
 
 require("./src/startupController");
+require("./src/DB");
 const server = require("./src/WebServer");
 require("./src/ConsoleInterface")
 

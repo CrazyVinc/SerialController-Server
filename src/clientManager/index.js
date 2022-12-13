@@ -1,19 +1,56 @@
 const { ws } = require("../SocketIO");
-
+const { DB } = require("../DB");
+const { Op } = require('sequelize');
+const { CronJob } = require("cron");
 
 class Clients {
     constructor() {
         this.clients = {}
     }
 
-    newClient(opts) {
+    async newClient(opts) {
         if(opts == undefined) return;
         var client = new SerialClient(opts);
         this.clients[client.name] = client;
+
+
+        var events = await DB.events.findAll({
+            where: {
+                enabled: true,
+                [Op.or]: [{
+                    targetType: "client",
+                    target: client.name
+                }, {
+                    triggerDevice: "client",
+                }]
+            }
+        });
+
+
+
+        events.forEach((event) => {
+            if(!['*', client.name].includes(event.target)) return;
+
+            var cmd = event.onTrigger.split(" ");
+            var args = cmd.slice(1);
+            cmd = cmd[0];
+            if(event.trigger == "onConnect") {
+                client.runCommand(cmd, args);
+            } else if(event.trigger.startsWith("cron ")) {
+                var cron = new CronJob(
+                    event.trigger.substring(5), () => {
+                        client.runCommand(cmd, args);
+                    }, null, true
+                );
+                this.clients[client.name].crons.push(cron);
+            }
+        });
+
         return client;
     }
 
-    removeClient(client) {
+    async removeClient(client) {
+        await client.disconnect();
         delete this.clients[client];
     }
 
@@ -48,6 +85,14 @@ class SerialClient {
         this.name = opts.clientName;
         this.commands = opts.commands;
         this.Controls = opts.Controls;
+        this.crons = [];
+    }
+
+    disconnect() {
+        return new Promise(async (resolve, reject) => {
+            this.crons.forEach(e => e.stop());
+            resolve();
+        })
     }
 
     /**
