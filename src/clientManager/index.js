@@ -1,7 +1,12 @@
-const { ws } = require("../SocketIO");
-const { DB } = require("../DB");
+const fs = require('fs');
+if(!fs.existsSync("./data")) fs.mkdirSync("./data");
+
 const { Op } = require('sequelize');
 const { CronJob } = require("cron");
+const { Socket } = require('socket.io');
+
+
+const { DB } = require("../DB");
 
 class Clients {
     constructor() {
@@ -32,7 +37,7 @@ class Clients {
             if(!['*', client.name].includes(event.target)) return;
 
             var cmd = event.onTrigger.split(" ");
-            var args = cmd.slice(1);
+            var args = cmd.slice(1).join(" ");
             cmd = cmd[0];
             if(event.trigger == "onConnect") {
                 client.runCommand(cmd, args);
@@ -76,22 +81,49 @@ class SerialClient {
     constructor(opts) {
         opts = Object.assign({
             clientName: null,
-            socketID: null,
+            socket: null,
             commands: {},
             Controls: {},
+            storeRemote: {
+                saveCMD: false,
+                getCMD: false
+            }
         }, opts);
 
-        this.socketID = opts.socketID;
+        /** @type {Socket} */
+        this.socket = opts.socket;
         this.name = opts.clientName;
         this.commands = opts.commands;
         this.Controls = opts.Controls;
         this.crons = [];
+        this.saveCMD = opts.storeRemote?.saveCMD;
+        this.getCMD = opts.storeRemote?.getCMD;
+
+        console.log(`Client ${this.name} is connected.`)
+
+        if(this.getCMD) {
+            try {
+                var command = JSON.parse(fs.readFileSync(`data/${this.name}.json`, { encoding: 'utf8' }));
+                this.runCommand(command.cmd, command.args);
+            } catch(err) {}
+        }
+    }
+    /**
+    * @param {Object} cmdObj
+    * @param {string} cmd
+    * @return {boolean}
+    */
+    isCMD(cmdObj, cmd) {
+        var res = cmdObj[Object.keys(cmdObj).find(key => key.toLowerCase() === cmd.toLowerCase())];
+        return (res !== undefined);
     }
 
     disconnect() {
+        console.log(`Client ${this.name} is disconnected, starting cleanup.`)
         return new Promise(async (resolve, reject) => {
             this.crons.forEach(e => e.stop());
             resolve();
+            console.log(`The cleanup for ${this.name} is completed.`)
         })
     }
 
@@ -100,10 +132,14 @@ class SerialClient {
      * @param {String} args
      */
     runCommand(cmd, args) {
-        if(this.socketID == null) return console.warn("Invalid SerialClient!");
-        console.log(cmd, args);
-        // if(this.commands[cmd])
-        ws().of('/client').emit('data', `${cmd} ${args}`);
+        if(this.socket == null) return console.warn("Invalid SerialClient!");
+        if(this.saveCMD) fs.writeFileSync(`data/${this.name}.json`, JSON.stringify({cmd, args}));
+
+        if(this.isCMD(this.commands, cmd)) {
+            this.socket.emit('data', `${cmd} ${args}`);
+        } else {
+            console.warn(`The command ${cmd} ${args} is not registered.`);
+        }
     }
 }
 

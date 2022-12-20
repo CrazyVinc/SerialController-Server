@@ -7,14 +7,18 @@ The commands on the serial device are controlled by the clients, which are the b
 ## Why?
 This project is developed to replace the [LEDController](https://github.com/CrazyVinc/LED-Controller).
 [LEDController](https://github.com/CrazyVinc/LED-Controller) was a learning project that I will start at the end of 2021. I used the [LEDController](https://github.com/CrazyVinc/LED-Controller) to control the lamps connected to the Arduinos.
-I wanted to give the [LEDController](https://github.com/CrazyVinc/LED-Controller) more options than just controlling lamps, so I developed Serial Controller.
+I wanted to give the [LEDController](https://github.com/CrazyVinc/LED-Controller) more options than just controlling lamps, so I started developing Serial Controller.
 ## Features:
 - [x] Multiple clients.
 - [x] Control clients through the console.
+- Save commands last state (Last executed)
+    - [ ] Blacklist / whitelist clients.
+    - [ ] Per command.
+    - [x] Per client.
 - [ ] Third party programs are supported via the `/3party` socket.io namespace / endpoint.
 - Event system (alpha).
    - triggers:
-        - [x] onConnected
+        - [x] onConnect
         - [x] cronJob schedule
         - [ ] (specific) SerialMessage received
     - run command on a:
@@ -27,6 +31,7 @@ Be free to contribute to the project!
 ## Verified working devices:
 Database: 
 - MySQL (MariaDB)
+
 Serial Device's:
 - Arduino UNO.
 
